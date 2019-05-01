@@ -7,8 +7,6 @@ const crypto = require('crypto');
 //authentication packages
 var session = require('express-session');
 
-
-
 router.post("/", function(req, res, next) {
   if (req.body.password == req.body.password_confirmation) {
     bcrypt.hash(req.body.password, saltRounds, function(err, hash) {
@@ -32,6 +30,5 @@ router.post("/", function(req, res, next) {
     res.status(400).send(JSON.stringify({"error": "password did not match"}));
   }
 });
-
 
 module.exports = router;
