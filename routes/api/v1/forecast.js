@@ -1,7 +1,6 @@
 var express = require("express");
 var router = express.Router();
 var User = require('../../../models').User;
-
 router.post("/", function(req, res, next) {
   if (req.body.password == req.body.password_confirmation) {
       User.create({

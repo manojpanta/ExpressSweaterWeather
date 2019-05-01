@@ -6,8 +6,10 @@ const saltRounds = 10;
 const crypto = require('crypto');
 //authentication packages
 var session = require('express-session');
+require('dotenv').config();
 
 router.post("/", function(req, res, next) {
+  console.log(process.env.GEOCODING_API);
   if (req.body.password == req.body.password_confirmation) {
     bcrypt.hash(req.body.password, saltRounds, function(err, hash) {
       User.create({
