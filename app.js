@@ -3,6 +3,8 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
+var db = require('./models');
+
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/api/v1/users');
 var sessionsRouter = require('./routes/api/v1/sessions');
@@ -20,5 +22,13 @@ app.use('/', indexRouter);
 app.use('/api/v1/users', usersRouter);
 app.use('/api/v1/sessions', sessionsRouter);
 app.use('/api/v1/forecast', forecastRouter);
+
+
+db.sequelize.sync().then(function() {
+  http.createServer(app).listen(app.get('port'), function(){
+    console.log('Express server listening on port ' + app.get('port'));
+  });
+});
+
 
 module.exports = app;
