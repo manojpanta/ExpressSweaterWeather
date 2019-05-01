@@ -4,11 +4,12 @@ var User = require('../../../models').User;
 const crypto = require('crypto');
 
 router.post("/", function(req, res, next) {
-  User.create({
-          name: req.body.name,
-          email: req.body.email,
-          password: req.body.password,
-          api_key: crypto.randomBytes(16).toString('hex')
+  if (req.body.password == req.body.password_confirmation) {
+    User.create({
+      name: req.body.name,
+      email: req.body.email,
+      password: req.body.password,
+      api_key: crypto.randomBytes(16).toString('hex')
     })
     .then(user => {
       res.setHeader("Content-Type", "application/json");
@@ -18,6 +19,10 @@ router.post("/", function(req, res, next) {
       res.setHeader("Content-Type", "application/json");
       res.status(500).send({ error });
     });
+  } else {
+    res.setHeader("Content-Type", "application/json");
+    res.status(400).send(JSON.stringify({"error": "password did not match"}));
+  }
 });
 
 
