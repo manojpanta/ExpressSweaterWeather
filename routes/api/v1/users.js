@@ -4,6 +4,10 @@ var User = require('../../../models').User;
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const crypto = require('crypto');
+//authentication packages
+var session = require('express-session');
+
+
 
 router.post("/", function(req, res, next) {
   if (req.body.password == req.body.password_confirmation) {
@@ -27,10 +31,6 @@ router.post("/", function(req, res, next) {
     res.setHeader("Content-Type", "application/json");
     res.status(400).send(JSON.stringify({"error": "password did not match"}));
   }
-
-
-
-
 });
 
 
