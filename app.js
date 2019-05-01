@@ -21,10 +21,5 @@ app.use('/api/v1/users', usersRouter);
 app.use('/api/v1/sessions', sessionsRouter);
 app.use('/api/v1/forecast', forecastRouter);
 
-engines:{
-  "node": "0.8.x",
-  "npm": "1.1.x"
-}
-
 
 module.exports = app;
