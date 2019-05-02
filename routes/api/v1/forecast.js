@@ -18,11 +18,13 @@ router.get("/", function(req, res, next) {
   .then((result)=>  {
     let lat = result["results"][0]["geometry"]["location"]["lat"]
     let lon = result["results"][0]["geometry"]["location"]["lng"]
+    
     return fetch("https://api.darksky.net/forecast/" + process.env.DARK_SKY_API_KEY + "/" + lat + "," + lon)
     .then((response) => response.json())
     .then((result) => {
       let forecast = _forecastFormatter(result, location);
-      res.send((forecast))
+      res.setHeader("Content-Type", "application/json");
+      res.status(201).send(JSON.stringify(forecast));
     })
   })
 });
