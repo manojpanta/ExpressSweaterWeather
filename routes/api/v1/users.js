@@ -6,7 +6,9 @@ const saltRounds = 10;
 const crypto = require('crypto');
 //authentication packages
 var session = require('express-session');
+var pry = require('pryjs');
 require('dotenv').config();
+
 
 router.post("/", function(req, res, next) {
   if (req.body.password == req.body.password_confirmation) {
