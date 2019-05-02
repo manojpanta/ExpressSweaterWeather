@@ -5,6 +5,7 @@ const fetch = require('node-fetch');
 var pry = require('pryjs');
 require('dotenv').config();
 
+
 router.get("/", function(req, res, next) {
   var location = req.query.location
   fetch("https://maps.googleapis.com/maps/api/geocode/json?address=denver&key=" + process.env.GEOCODING_API)
@@ -15,15 +16,20 @@ router.get("/", function(req, res, next) {
     return fetch("https://api.darksky.net/forecast/" + process.env.DARK_SKY_API_KEY + "/" + lat + "," + lon)
     .then((response) => response.json())
     .then((result) => {
-      let forecast = {
-        "location": location,
-        "currently": result["currently"],
-        "hourly": result["hourly"],
-        "daily": result["daily"]
-      }
+      let forecast = _forecastFormatter(result, location);
       res.send((forecast))
     })
   })
 });
+
+
+function _forecastFormatter(result, location) {
+  return {
+    "location": location,
+    "currently": result["currently"],
+    "hourly": result["hourly"],
+    "daily": result["daily"]
+  }
+}
 
 module.exports = router;
