@@ -1,27 +1,29 @@
 var express = require("express");
 var router = express.Router();
 var User = require('../../../models').User;
+const fetch = require('node-fetch');
+var pry = require('pryjs');
+require('dotenv').config();
 
-router.post("/", function(req, res, next) {
-  if (req.body.password == req.body.password_confirmation) {
-      User.create({
-        name: req.body.name,
-        email: req.body.email,
-        password: hash,
-        api_key: crypto.randomBytes(16).toString('hex')
-      })
-      .then(user => {
-        res.setHeader("Content-Type", "application/json");
-        res.status(201).send(JSON.stringify({"api_key": user.api_key}));
-      })
-      .catch(error => {
-        res.setHeader("Content-Type", "application/json");
-        res.status(500).send({ error });
-      });
-  } else {
-    res.setHeader("Content-Type", "application/json");
-    res.status(400).send(JSON.stringify({"error": "password did not match"}));
-  }
+router.get("/", function(req, res, next) {
+  var location = req.query.location
+  fetch("https://maps.googleapis.com/maps/api/geocode/json?address=denver&key=" + process.env.GEOCODING_API)
+  .then((response) => response.json())
+  .then((result)=>  {
+    let lat = result["results"][0]["geometry"]["location"]["lat"]
+    let lon = result["results"][0]["geometry"]["location"]["lng"]
+    return fetch("https://api.darksky.net/forecast/" + process.env.DARK_SKY_API_KEY + "/" + lat + "," + lon)
+    .then((response) => response.json())
+    .then((result) => {
+      let forecast = {
+        "location": location,
+        "currently": result["currently"],
+        "hourly": result["hourly"],
+        "daily": result["daily"]
+      }
+      res.send((forecast))
+    })
+  })
 });
 
 module.exports = router;
