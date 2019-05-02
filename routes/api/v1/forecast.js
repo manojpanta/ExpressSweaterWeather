@@ -7,8 +7,13 @@ require('dotenv').config();
 
 
 router.get("/", function(req, res, next) {
+
   var location = req.query.location
-  fetch("https://maps.googleapis.com/maps/api/geocode/json?address=denver&key=" + process.env.GEOCODING_API)
+  var url = new URL("https://maps.googleapis.com/maps/api/geocode/json"),
+  params = {address: location, key: process.env.GEOCODING_API}
+  Object.keys(params).forEach(key => url.searchParams.append(key, params[key]))
+
+  fetch(url)
   .then((response) => response.json())
   .then((result)=>  {
     let lat = result["results"][0]["geometry"]["location"]["lat"]
@@ -21,7 +26,6 @@ router.get("/", function(req, res, next) {
     })
   })
 });
-
 
 function _forecastFormatter(result, location) {
   return {
