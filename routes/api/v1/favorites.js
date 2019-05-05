@@ -4,6 +4,8 @@ var User = require('../../../models').User;
 var Favorite = require('../../../models').Favorite;
 var pry = require('pryjs');
 const fetch = require('node-fetch');
+var Favorite = require('../../../models').Favorite;
+var getForecast = require('../../../models').getForecast;
 
 
 router.post("/", function(req, res, next) {
@@ -45,7 +47,7 @@ router.get("/", function(req, res, next) {
         where: {
           user_id: user.id,
         },
-        attributes: ['user_id', 'location']
+        attributes: ['location']
       })
     } else {
       res.setHeader("Content-Type", "application/json");
@@ -55,14 +57,13 @@ router.get("/", function(req, res, next) {
   .then((favorites) => {
     return  JSON.stringify(favorites)
   })
-  // .then((result)=> result)
   .then ( async (favInjson) => {
-    var  favoritesArray = JSON.parse(favInjson);
+    var favoritesArray = JSON.parse(favInjson);
     for (var i=0; i<favoritesArray.length; i++){
 	    let forecast = await getForecast(favoritesArray[i]["location"])
 	    favoritesArray[i].forecast = forecast;
-      return favoritesArray
 	  }
+    return favoritesArray
   })
   .then((result) => {
     res.setHeader("Content-Type", "application/json");
@@ -74,57 +75,61 @@ router.get("/", function(req, res, next) {
   })
 })
 
-
-
- const getForecast = async (location)=> {
-  var url = new URL("https://maps.googleapis.com/maps/api/geocode/json"),
-  params = {address: location, key: process.env.GEOCODING_API}
-  Object.keys(params).forEach(key => url.searchParams.append(key, params[key]))
-
-  const newData = await  mainFetch(url);
-  let lat = newData["results"][0]["geometry"]["location"]["lat"]
-  let lon = newData["results"][0]["geometry"]["location"]["lng"]
-  var url1 = "https://api.darksky.net/forecast/" + process.env.DARK_SKY_API_KEY + "/" + lat + "," + lon
-  return await  mainFetch(url1);
-
-
-
-  // fetch(url)
-  // .then((response) => response.json())
-  // .then((result)=>  {
-  //   let lat = result["results"][0]["geometry"]["location"]["lat"]
-  //   let lon = result["results"][0]["geometry"]["location"]["lng"]
-  //
-  //
-  //   return fetch("https://api.darksky.net/forecast/" + process.env.DARK_SKY_API_KEY + "/" + lat + "," + lon)
-  //   .then((response) => response.json())
-  //   .then((result) => {
-  //
-  //     let forecast = _forecastFormatter(result, location);
-  //     return Promise.all(forecast)
-  //     // res.setHeader("Content-Type", "application/json");
-  //     // res.status(201).send(JSON.stringify(forecast));
-  //   })
-  // })
-}
-
-function _forecastFormatter(result, location) {
-  return {
-    "location": location,
-    "currently": result["currently"],
-    "hourly": result["hourly"],
-    "daily": result["daily"]
-  }
-}
-
-const mainFetch = async (url) => {
-  try{
-    const response = await fetch(url)
-    return await response.json()
-  }catch(error){
-    throw new Error(error.message)
-  }
-}
-
-
+router.delete('/', function (req, res, next) {
+  User.findOne({
+    where: {
+      api_key: req.body.api_key
+    }
+  })
+  .then((user) =>{
+    return Favorite.destroy({
+      where: {
+        user_id: user.id,
+        location: req.body.location
+      }
+    })
+  })
+  .then((result) => {
+    res.setHeader("Content-Type", "application/json");
+    res.status(200).send({"success": req.body.location + " has been removed from your location !!!!!"});
+  })
+  .catch((error)=> {
+    res.setHeader("Content-Type", "application/json");
+    res.status(200).send({"error": req.body.location + "could not be found!!"});
+  })
+})
 module.exports = router;
+
+//////moved following methods to models folder, want to move to services folder
+// but not working.
+
+
+// const getForecast = async (location)=> {
+//   var url = new URL("https://maps.googleapis.com/maps/api/geocode/json"),
+//   params = {address: location, key: process.env.GEOCODING_API}
+//   Object.keys(params).forEach(key => url.searchParams.append(key, params[key]))
+//
+//   const newData = await  mainFetch(url);
+//   let lat = newData["results"][0]["geometry"]["location"]["lat"]
+//   let lon = newData["results"][0]["geometry"]["location"]["lng"]
+//   var url1 = "https://api.darksky.net/forecast/" + process.env.DARK_SKY_API_KEY + "/" + lat + "," + lon
+//   return await  mainFetch(url1);
+// }
+
+// function _forecastFormatter(result, location) {
+//   return {
+//     "location": location,
+//     "currently": result["currently"],
+//     "hourly": result["hourly"],
+//     "daily": result["daily"]
+//   }
+// }
+
+// const mainFetch = async (url) => {
+//   try{
+//     const response = await fetch(url)
+//     return await response.json()
+//   }catch(error){
+//     throw new Error(error.message)
+//   }
+// }
